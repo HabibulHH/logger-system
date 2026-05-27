@@ -1,0 +1,18 @@
+{
+  "name": "console-log-at-scale-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Teaching demo: why console.log breaks at scale, and what fixes it.",
+  "scripts": {
+    "start": "node app.js",
+    "naive": "node 01-naive.js",
+    "levels": "node 02-no-levels.js",
+    "context": "node 03-no-context.js",
+    "unstructured": "node 04-unstructured.js",
+    "perf": "node 05-performance.js",
+    "perf:devnull": "node 05-performance.js > /dev/null",
+    "secrets": "node 06-cant-disable.js",
+    "fixed:prod": "LOG_LEVEL=info node 07-fixed.js",
+    "fixed:dev": "LOG_LEVEL=debug node 07-fixed.js"
+  }
+}
