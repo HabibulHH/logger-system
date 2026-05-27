@@ -1,0 +1,15 @@
+{
+  "name": "winston-students-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Same logging lessons as primary-logger, but using the real winston library behind a small students GET API.",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "LOG_LEVEL=debug node app.js",
+    "prod": "LOG_LEVEL=info node app.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "winston": "^3.13.0"
+  }
+}
