@@ -25,6 +25,7 @@ const redact = winston.format((info) => {
       if (REDACT.has(k)) obj[k] = '[REDACTED]';
       else if (obj[k] && typeof obj[k] === 'object') mask(obj[k]);
     }
+
     return obj;
   };
   return mask(info);
@@ -55,8 +56,8 @@ const logger = winston.createLogger({
 
     // A separate logs/error.log with only errors — handy for "what broke?".
     new winston.transports.File({
-      filename: path.join(LOG_DIR, 'error.log'),
-      level: 'error',
+     filename: path.join(LOG_DIR, 'error.log'),
+     level: 'error',
     }),
   ],
 });

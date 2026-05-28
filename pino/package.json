@@ -1,0 +1,15 @@
+{
+  "name": "pino-students-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Same logging lessons as primary-logger and winstone, but using the pino library behind a small students GET API.",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "LOG_LEVEL=debug node app.js",
+    "prod": "LOG_LEVEL=info node app.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pino": "^9.5.0"
+  }
+}
