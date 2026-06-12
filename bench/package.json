@@ -1,0 +1,14 @@
+{
+  "name": "logger-bench",
+  "version": "1.0.0",
+  "private": true,
+  "description": "winston vs pino (multistream vs worker-thread transport) microbenchmark.",
+  "scripts": {
+    "bench": "node bench.js",
+    "bench:big": "node bench.js 500000"
+  },
+  "dependencies": {
+    "pino": "^9.5.0",
+    "winston": "^3.13.0"
+  }
+}

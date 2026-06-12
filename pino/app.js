@@ -70,5 +70,8 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  logger.info({ port: PORT, level: logger.level }, 'server listening');
+  // Note: don't use the key `level` in pino's merging object — pino treats
+  // it as a reserved field for per-call level override, and a string value
+  // there can cause the line to be dropped silently by the transport.
+  logger.info({ port: PORT, logLevel: logger.level }, 'server listening');
 });
