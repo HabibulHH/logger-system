@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logger benchmark report — winston vs pino</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --ink:#e2e8f0; --muted:#94a3b8; --line:#334155;
+    --winston:#f59e0b; --pino:#2dd4bf;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+         background:var(--bg); color:var(--ink); padding:32px 20px 64px; }
+  .wrap { max-width:900px; margin:0 auto; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 8px; }
+  .host { color:var(--muted); font-size:13px; margin:0 0 28px; }
+  .host code { color:var(--ink); }
+  .legend { display:flex; gap:18px; margin:0 0 28px; flex-wrap:wrap; }
+  .legend span { display:flex; align-items:center; gap:7px; font-size:13px; color:var(--muted); }
+  .dot { width:11px; height:11px; border-radius:3px; display:inline-block; }
+  .dot.winston { background:var(--winston); } .dot.pino { background:var(--pino); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+          padding:22px 24px; margin:0 0 22px; }
+  .card-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  h2 { font-size:18px; margin:0; }
+  .badge { font-size:12px; font-weight:600; padding:4px 11px; border-radius:999px; color:#0b1220; }
+  .badge.winston { background:var(--winston); } .badge.pino { background:var(--pino); }
+  .meta { color:var(--muted); font-size:13px; margin:6px 0 10px; }
+  .meta code { background:#0b1220; padding:1px 6px; border-radius:5px; }
+  .blurb { color:#cbd5e1; margin:0 0 18px; }
+  .chart { margin:0 0 18px; }
+  .chart-title { font-size:13px; color:var(--muted); margin:0 0 10px; }
+  .hint { opacity:.7; }
+  .bar-row { display:grid; grid-template-columns:120px 1fr 80px; align-items:center; gap:12px; margin:0 0 8px; }
+  .bar-label { font-size:13px; color:var(--ink); }
+  .bar-track { background:#0b1220; border-radius:6px; height:22px; overflow:hidden; }
+  .bar { height:100%; border-radius:6px; min-width:3px; transition:width .3s; }
+  .bar.winston { background:var(--winston); } .bar.pino { background:var(--pino); }
+  .bar-val { font-size:13px; text-align:right; color:var(--ink); }
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-top:4px; }
+  th, td { text-align:right; padding:7px 8px; border-bottom:1px solid var(--line); }
+  th:first-child, td:first-child { text-align:left; }
+  th { color:var(--muted); font-weight:600; }
+  td.cfg { font-weight:600; }
+  tr.winston td.cfg { color:var(--winston); } tr.pino td.cfg { color:var(--pino); }
+  .takeaway { background:#0b1220; border:1px solid var(--line); border-radius:14px; padding:20px 24px; }
+  .takeaway h2 { margin:0 0 10px; }
+  .takeaway li { margin:0 0 7px; color:#cbd5e1; }
+  footer { color:var(--muted); font-size:12px; text-align:center; margin-top:28px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Logger benchmark — winston vs pino</h1>
+    <p class="sub">End-to-end HTTP latency under identical k6 traffic. Same two loggers; the winner changes with the workload.</p>
+    <p class="host">Windows_NT 10.0.26100 &middot; 16 cores &middot; Node v24.14.0 &middot; pino 9.14.0 &middot; winston 3.19.0 &middot; generated 2026-06-15 05:06 UTC</p>
+
+    <div class="legend">
+      <span><i class="dot winston"></i> winston — logs on the main thread</span>
+      <span><i class="dot pino"></i> pino-transport — logs on a worker thread</span>
+    </div>
+
+    
+    <section class="card">
+      <div class="card-head">
+        <h2>Stress — light route, high rate</h2>
+        <span class="badge pino">winner: pino-transport</span>
+      </div>
+      <p class="meta">5,000 req/s &middot; 15s &middot; route <code>/students/:id</code></p>
+      <p class="blurb">Near-no-op endpoint at 5,000 req/s. Logging is most of the per-request cost and the machine is not yet saturated, so pino offloading log I/O to a worker thread keeps request latency low.</p>
+
+      <div class="chart">
+        <div class="chart-title">p99 latency <span class="hint">(lower is better)</span></div>
+        
+        <div class="bar-row">
+          <span class="bar-label">winston</span>
+          <div class="bar-track"><div class="bar winston" style="width:100.0%"></div></div>
+          <span class="bar-val">25.5 ms</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">pino-transport</span>
+          <div class="bar-track"><div class="bar pino" style="width:39.5%"></div></div>
+          <span class="bar-val">10.1 ms</span>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>config</th><th>req/s</th><th>avg</th><th>p95</th><th>p99</th><th>max</th><th>dropped</th><th>fail %</th></tr>
+        </thead>
+        <tbody>
+        <tr class="winston">
+          <td class="cfg">winston</td>
+          <td>4,987</td>
+          <td>0.8</td>
+          <td>1.0</td>
+          <td><strong>25.5</strong></td>
+          <td>116.1</td>
+          <td>195</td>
+          <td>0.00</td>
+        </tr>
+        <tr class="pino">
+          <td class="cfg">pino-transport</td>
+          <td>4,992</td>
+          <td>0.3</td>
+          <td>0.6</td>
+          <td><strong>10.1</strong></td>
+          <td>88.6</td>
+          <td>114</td>
+          <td>0.00</td>
+        </tr></tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Realistic — busy main thread (production-shaped)</h2>
+        <span class="badge pino">winner: pino-transport</span>
+      </div>
+      <p class="meta">2,500 req/s &middot; 15s &middot; route <code>/report/:id</code></p>
+      <p class="blurb">Real per-request CPU work plus a DB-like wait at 2,500 req/s — the way an actual handler behaves. The main thread is the scarce resource and spare cores exist for the worker, so moving log work off-thread (pino) frees the event loop to serve customers.</p>
+
+      <div class="chart">
+        <div class="chart-title">p99 latency <span class="hint">(lower is better)</span></div>
+        
+        <div class="bar-row">
+          <span class="bar-label">winston</span>
+          <div class="bar-track"><div class="bar winston" style="width:100.0%"></div></div>
+          <span class="bar-val">35.1 ms</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">pino-transport</span>
+          <div class="bar-track"><div class="bar pino" style="width:39.7%"></div></div>
+          <span class="bar-val">13.9 ms</span>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>config</th><th>req/s</th><th>avg</th><th>p95</th><th>p99</th><th>max</th><th>dropped</th><th>fail %</th></tr>
+        </thead>
+        <tbody>
+        <tr class="winston">
+          <td class="cfg">winston</td>
+          <td>2,492</td>
+          <td>4.8</td>
+          <td>9.8</td>
+          <td><strong>35.1</strong></td>
+          <td>116.9</td>
+          <td>95</td>
+          <td>0.00</td>
+        </tr>
+        <tr class="pino">
+          <td class="cfg">pino-transport</td>
+          <td>2,496</td>
+          <td>4.0</td>
+          <td>8.6</td>
+          <td><strong>13.9</strong></td>
+          <td>69.1</td>
+          <td>24</td>
+          <td>0.00</td>
+        </tr></tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Extreme — light route, saturating rate</h2>
+        <span class="badge winston">winner: winston</span>
+      </div>
+      <p class="meta">10,000 req/s &middot; 15s &middot; route <code>/students/:id</code></p>
+      <p class="blurb">Near-no-op endpoint at 10,000 req/s. The whole machine is CPU-saturated, so pino's worker thread has no free core to run on and its cross-thread handoff becomes overhead — winston's simple in-process write wins.</p>
+
+      <div class="chart">
+        <div class="chart-title">p99 latency <span class="hint">(lower is better)</span></div>
+        
+        <div class="bar-row">
+          <span class="bar-label">winston</span>
+          <div class="bar-track"><div class="bar winston" style="width:94.1%"></div></div>
+          <span class="bar-val">54.6 ms</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">pino-transport</span>
+          <div class="bar-track"><div class="bar pino" style="width:100.0%"></div></div>
+          <span class="bar-val">58.0 ms</span>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>config</th><th>req/s</th><th>avg</th><th>p95</th><th>p99</th><th>max</th><th>dropped</th><th>fail %</th></tr>
+        </thead>
+        <tbody>
+        <tr class="winston">
+          <td class="cfg">winston</td>
+          <td>9,907</td>
+          <td>7.0</td>
+          <td>43.0</td>
+          <td><strong>54.6</strong></td>
+          <td>176.9</td>
+          <td>1,377</td>
+          <td>0.00</td>
+        </tr>
+        <tr class="pino">
+          <td class="cfg">pino-transport</td>
+          <td>9,919</td>
+          <td>5.2</td>
+          <td>50.8</td>
+          <td><strong>58.0</strong></td>
+          <td>163.3</td>
+          <td>1,217</td>
+          <td>0.00</td>
+        </tr></tbody>
+      </table>
+    </section>
+
+    <div class="takeaway">
+      <h2>Takeaway</h2>
+      <ul>
+        <li><strong>"Faster logger" is context-dependent.</strong> The same two loggers swap places as the workload changes — no single winner.</li>
+        <li><strong>Pino wins when the main thread is busy and cores are spare</strong> (stress &amp; realistic): moving log I/O to a worker frees the event loop to serve requests.</li>
+        <li><strong>Winston wins when the machine is fully saturated</strong> (extreme): pino's worker has no free core, so the cross-thread handoff becomes pure overhead.</li>
+        <li>Always read a benchmark together with its load level and where the CPU is spent.</li>
+      </ul>
+    </div>
+
+    <footer>Generated by report.js — re-run with <code>npm run report</code>.</footer>
+  </div>
+</body>
+</html>

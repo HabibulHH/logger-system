@@ -2,12 +2,16 @@
   "name": "logger-bench",
   "version": "1.0.0",
   "private": true,
-  "description": "winston vs pino (multistream vs worker-thread transport) microbenchmark.",
+  "description": "k6 end-to-end load test: winston vs pino worker-thread transport.",
   "scripts": {
-    "bench": "node bench.js",
-    "bench:big": "node bench.js 500000"
+    "k6bench": "node k6bench.js",
+    "k6bench:stress": "node k6bench.js 5000 15s",
+    "k6bench:extreme": "node k6bench.js 10000 15s",
+    "k6bench:realistic": "node k6bench.js 2500 15s /report/",
+    "report": "node report.js"
   },
   "dependencies": {
+    "express": "^5.2.1",
     "pino": "^9.5.0",
     "winston": "^3.13.0"
   }
