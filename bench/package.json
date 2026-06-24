@@ -8,6 +8,7 @@
     "k6bench:stress": "node k6bench.js 5000 15s",
     "k6bench:extreme": "node k6bench.js 10000 15s",
     "k6bench:realistic": "node k6bench.js 2500 15s /report/",
+    "micro": "node micro.js",
     "report": "node report.js"
   },
   "dependencies": {
